@@ -1,0 +1,140 @@
+@base_url = http://localhost:9200
+
+###
+GET {{base_url}}/_cat/health?v
+
+
+###
+PUT {{base_url}}/customers
+
+
+###
+PUT {{base_url}}/customers/_mapping
+Content-Type: application/json
+
+{
+  "properties": {
+    "name": { "type": "text" },
+    "email": { "type": "keyword" },
+    "age": { "type": "integer" },
+    "phone": {"type": "keyword"},
+    "gender": {"type": "keyword"}
+
+  }
+}
+
+
+###
+GET {{base_url}}/customers/_mapping
+
+
+###
+POST {{base_url}}/customers/_doc
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "age": 35,
+  "email": "johndoe@example.com",
+  "phone": "555-555-1234",
+  "gender": "male"
+}
+
+
+###
+POST {{base_url}}/customers/_doc
+Content-Type: application/json
+
+{
+  "name": "Sally Doe",
+  "age": 30,
+  "email": "sallydoe@example.com",
+  "phone": "555-444-1234",
+  "gender": "Female"
+}
+
+
+###
+POST {{base_url}}/customers/_bulk
+Content-Type: application/json
+
+< ./data.json
+
+
+###
+GET {{base_url}}/customers/_search
+Content-Type: application/json
+
+{
+  "query": {
+    "match": {
+      "name": "John Doe" // Doe
+    }
+  }
+}
+
+
+###
+GET {{base_url}}/customers/_search
+Content-Type: application/json
+
+{
+  "aggs": {
+    "avg_age": {
+      "avg": {
+        "field": "age"
+      }
+    }
+  }
+}
+
+
+###
+GET {{base_url}}/customers/_search
+Content-Type: application/json
+
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "age": {
+              "gte": 18
+            }
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "name": "Doe"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "avg_age_by_gender": {
+      "terms": {
+        "field": "gender"
+      },
+      "aggs": {
+        "avg_age_amount": {
+          "avg": {
+            "field": "age"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+###
+DELETE {{base_url}}/customers
